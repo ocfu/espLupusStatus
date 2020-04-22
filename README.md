@@ -1,7 +1,7 @@
 # espLupusStatus
 A very Simple status indicator for a Lupus alarm and smart home system based on an NodeMCU ESP8266.
 
-The indicator is passive. Which means it is not pulling for the status, but waiting for incoming commands. That means it must be set from the external systemm itself. In the Lupus system you can define rules. A rule can  trigger an action-URL. And this is, how this status indicator gets his information.
+The indicator is passive. Which means it is not pulling for the status, but waiting for incoming commands. That means it must be set from the external system itself. In the Lupus system you can define rules. A rule can  trigger an action-URL. And this is, how this status indicator gets his information.
 The trade-off of this passive indicator is, if it missed an action-URL call, the status can differ from the origin. 
 
 <h2>LEDs:</h2>

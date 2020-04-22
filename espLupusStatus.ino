@@ -11,6 +11,14 @@
 #define GET_WINDOW1 1
 #define GET_WINDOW2 2
 
+#define STATUS_DISARMED 0
+#define STATUS_ARMED 1
+#define STATUS_HOME 2
+
+#define BLINK_PERIOD 1000   // ms
+
+unsigned long last_blink = 0;
+
 
 const char *ssid = MY_SSID;
 const char *password = MY_KEY;
@@ -22,12 +30,14 @@ const int led_green1 = D2;
 const int led_green2 = D3;
 const int led_yellow = D5;   // D4 is the internal LED on NodeMCU
 
+int lupus_status = STATUS_DISARMED; 
+
 const char* getLEDStatus(int n) {
   switch (n) {
     case GET_STATUS:
-      if (digitalRead(led_red) == HIGH)
+      if (lupus_status == STATUS_ARMED)
         return "armed";
-      else if (digitalRead(led_yellow) == HIGH)
+      else if (lupus_status == STATUS_HOME)
         return "home";
       else
         return "disarmed";
@@ -127,14 +137,12 @@ void setup(void) {
   server.on("/", handleRoot);
 
   server.on("/arm", []() {
-    digitalWrite(led_red, HIGH);
-    digitalWrite(led_yellow, LOW);
+    lupus_status = STATUS_ARMED;
     ok();
   });
 
   server.on("/home", []() {
-    digitalWrite(led_red, LOW);
-    digitalWrite(led_yellow, HIGH);
+    lupus_status = STATUS_HOME;
     ok();
   });
 
@@ -149,8 +157,7 @@ void setup(void) {
   });
 
   server.on("/disarm", []() {
-    digitalWrite(led_red, LOW);
-    digitalWrite(led_yellow, LOW);
+    lupus_status = 0;
     ok();
   });
 
@@ -181,4 +188,23 @@ void setup(void) {
 void loop(void) {
   server.handleClient();
   MDNS.update();
+
+  if ((millis() - last_blink) > BLINK_PERIOD) {
+    switch (lupus_status) {
+      case 1:  // blink red led
+        digitalWrite(led_red, !digitalRead(led_red));
+        digitalWrite(led_yellow, LOW);
+        break;
+      case 2:
+        digitalWrite(led_yellow, !digitalRead(led_yellow));
+        digitalWrite(led_red, LOW);
+        break;
+      default:
+        digitalWrite(led_red, LOW);
+        digitalWrite(led_yellow, LOW);
+    }
+    last_blink = millis();
+  }
+
+  delay(10);
 }

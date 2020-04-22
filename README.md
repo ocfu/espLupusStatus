@@ -8,10 +8,10 @@ The trade-off of this passive indicator is, if it missed an action-URL call, the
 
 <table>
   <tr><th>Color</th><th>I/O port</th><th>Purpose</th></tr>
-  <tr><td>"red"</td><td>at GPIO5 D1</td><td>status "armed" (no differenciation area 1 or 2)</td></tr>
-  <tr><td>"yellow"</td><td>at GPIO14 D5</td><td>status "home"</td></tr>
-  <tr><td>"green1"</td><td>at GPIO40 D2</td><td>open windows level 1</td></tr>
-  <tr><td>"green2"</td><td>at GPIO D3</td><td>open windows level 2</td></tr>
+  <tr><td>"red"</td><td>GPIO5 D1</td><td>status "armed" (no differenciation area 1 or 2)</td></tr>
+  <tr><td>"yellow"</td><td>GPIO14 D5</td><td>status "home"</td></tr>
+  <tr><td>"green1"</td><td>GPIO40 D2</td><td>open windows level 1</td></tr>
+  <tr><td>"green2"</td><td>GPIO D3</td><td>open windows level 2</td></tr>
 </table>
 
 

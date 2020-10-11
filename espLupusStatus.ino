@@ -10,7 +10,7 @@
 #define GET_STATUS  0
 #define GET_WINDOW1 1
 #define GET_WINDOW2 2
-
+ 
 #define STATUS_DISARMED 0
 #define STATUS_ARMED 1
 #define STATUS_HOME 2
@@ -30,7 +30,14 @@ const int led_green1 = D2;
 const int led_green2 = D3;
 const int led_yellow = D5;   // D4 is the internal LED on NodeMCU
 
-int lupus_status = STATUS_DISARMED; 
+unsigned cnt_red = 0;
+unsigned cnt_green1 = 0;
+unsigned cnt_green2 = 0;
+unsigned cnt_yellow = 0;
+unsigned cnt_door = 0;
+bool sta_door = false;     // true, if door is open
+
+int lupus_status = STATUS_DISARMED;
 
 const char* getLEDStatus(int n) {
   switch (n) {
@@ -62,35 +69,83 @@ const char* getLEDStatus(int n) {
 void handleRoot() {
   char http[1000];
   // be careful, max. stack size for ESP8266 is 4kB. If you need bigger pages, then consider
-  // to use flash (PROGMEM or SPIFF) or send to client in parts. This one here is quick and dirty ;-)
+  // to use flash (PROGMEM or SPIFF). This one here is quick and dirty ;-)
 
   int sec = millis() / 1000;
   int min = sec / 60;
   int hr = min / 60;
 
-  snprintf(http, 1000,
-           "<!DOCTYPE html>\
-<html>\
-    <meta http-equiv='refresh' content='5'/>\
-    <title>ESP8266 Lupus Status</title>\
-    <style>\
-      body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000000  }\
-    </style>\
-  </head>\
-  <body>\
-    <h1>Lupus Status</h1>\
-    <table>\
-        <tr><td>Status:</td><td>%s</td></tr>\
-        <tr><td>Fenster OG:</td><td>%s</td></tr>\
-        <tr><td>Fenster EG:</td><td>%s</td></tr>\
-    </table>\
-    <p>Uptime: %02d:%02d:%02d</p>\
-  </body>\
-</html>\
-",
-           getLEDStatus(GET_STATUS), getLEDStatus(GET_WINDOW1), getLEDStatus(GET_WINDOW2), hr, min % 60, sec % 60
-          );
+  server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+
+  snprintf(http, sizeof(http) - 1,
+    "<!DOCTYPE html>\
+    <html>\
+    <head>\
+        <meta http-equiv='refresh' content='5'/>\
+        <title>ESP8266 Lupus Status</title>\
+        <style>\
+          body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000000  }\
+          table, th, td {\
+               border: 1px solid black;\
+               border-collapse: collapse;\
+          }\
+          th, td {\
+            padding: 5px;\
+          }\
+          th {\
+            text-align: left;\
+          }\
+        </style>\
+    </head>");
+    
+  http[sizeof(http) - 1] = '\0';
   server.send(200, "text/html", http);
+
+  snprintf(http, sizeof(http) - 1,
+    "<body>\
+    <h1>Lupus Status</h1>\
+    <table style=\"width:50%%\">\
+        <tr><th></th><th>Status</th><th>Zaehler</th></tr>\
+    ");
+  http[sizeof(http) - 1] = '\0';
+  server.sendContent(http);
+        
+  snprintf(http, sizeof(http) - 1,
+    "<tr><td>Zentrale:</td><td>%s</td><td>%d (armed)/%d (home)</td></tr>\
+    ", getLEDStatus(GET_STATUS), cnt_red, cnt_yellow);
+  http[sizeof(http) - 1] = '\0';
+  server.sendContent(http);
+    
+  snprintf(http, sizeof(http) - 1,
+    "<tr><td>Fenster OG:</td><td>%s</td><td>%d</td></tr>\
+    ", getLEDStatus(GET_WINDOW1), cnt_green1);
+  http[sizeof(http) - 1] = '\0';
+  server.sendContent(http);
+    
+  snprintf(http, sizeof(http) - 1,
+    "<tr><td>Fenster EG:</td><td>%s</td><td>%d</td></tr>\
+    ", getLEDStatus(GET_WINDOW2), cnt_green2);
+  http[sizeof(http) - 1] = '\0';
+  server.sendContent(http);
+    
+  snprintf(http, sizeof(http) - 1,
+    "<tr><td>Haustuer:</td><td>%s</td><td>%d</td></tr>\
+    ", sta_door ? "open" : "closed", cnt_door);
+  http[sizeof(http) - 1] = '\0';
+  server.sendContent(http);
+  
+  snprintf(http, sizeof(http) - 1,
+    "</table>\
+    <p>Uptime: %02d:%02d:%02d</p>\
+    <form action=\"/resetcnt\">\
+        <input type=\"submit\" value=\"Zaehler zuruecksetzen\" />\
+    </form>\
+    </body>\
+    </html>\
+    ", hr, min % 60, sec % 60);
+  http[sizeof(http) - 1] = '\0';
+  server.sendContent(http);
+  server.client().stop(); // no more content
 }
 
 void redirect() {
@@ -101,6 +156,7 @@ void redirect() {
 void ok() {
   server.send (200);
 }
+
 
 void setup(void) {
   pinMode(led_red, OUTPUT);
@@ -138,21 +194,31 @@ void setup(void) {
 
   server.on("/arm", []() {
     lupus_status = STATUS_ARMED;
+    cnt_red++;
     ok();
   });
 
   server.on("/home", []() {
     lupus_status = STATUS_HOME;
+    cnt_yellow++;
     ok();
   });
 
   server.on("/wopen1", []() {
     digitalWrite(led_green1, HIGH);
+    cnt_green1++;
     ok();
   });
 
   server.on("/wopen2", []() {
     digitalWrite(led_green2, HIGH);
+    cnt_green2++;
+    ok();
+  });
+
+  server.on("/dopen", []() {
+    cnt_door++;
+    sta_door = true;
     ok();
   });
 
@@ -177,8 +243,22 @@ void setup(void) {
     ok();
   });
 
-  server.onNotFound([]() {
+  server.on("/dclosed", []() {
+    sta_door = false;
     ok();
+  });
+
+  server.on("/resetcnt", []() {
+    cnt_red = 0;
+    cnt_green1 = 0;
+    cnt_green2 = 0;
+    cnt_yellow = 0;
+    cnt_door = 0;
+    redirect();
+  });
+
+  server.onNotFound([]() {
+    redirect();
   });
 
   server.begin();

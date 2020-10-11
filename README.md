@@ -17,16 +17,19 @@ The trade-off of this passive indicator is, if it missed an action-URL call, the
 
 <h2>Commands:</h2>
 <table>
-  <tr><th>URL</th><th>Purpose</th></tr>
-  <tr><td>'http://esp-ip'</td><td>Shows the Status in your browser (update 1s)</td></tr>
-<tr><td>'http://esp-ip/arm'</td><td>Activates "arm" status indication (red led on)
-<tr><td>'http://esp-ip/home'</td><td>Activates "home" status inidication (yellow led on)
-<tr><td>'http://esp-ip/disarm'</td><td>De-activates arm and home status and (red and yellow led off)
-<tr><td>'http://esp-ip/wopen1'</td><td>Activates "windows open level 1" status inidication (green1 led on)                      
-<tr><td>'http://esp-ip/wopen2'</td><td>Activates "windows open level 2" status inidication (green2 led on)                      
-<tr><td>'http://esp-ip/wclosed1'</td><td>De-Activates "windows open level 1" status (green1 led off)
-<tr><td>'http://esp-ip/wclosed2'</td><td>De-Activates "windows open level 2" status (green2 led off)
-<tr><td>'http://esp-ip/wclosed'</td><td>De-Activates "windows open both levels" status (green1 and green2 leds off)
+<tr><th>URL</th><th>Purpose</th></tr>
+<tr><td>'http://esp-ip'</td><td>Shows the Status in your browser (update 1s)</td></tr>
+<tr><td>'http://esp-ip/arm'</td><td>Activates "arm" status indication (red led on)</td></tr>
+<tr><td>'http://esp-ip/home'</td><td>Activates "home" status inidication (yellow led on)</td></tr>
+<tr><td>'http://esp-ip/disarm'</td><td>De-activates arm and home status and (red and yellow led off)</td></tr>
+<tr><td>'http://esp-ip/wopen1'</td><td>Activates "windows open level 1" status inidication (green1 led on)</td></tr>                     
+<tr><td>'http://esp-ip/wopen2'</td><td>Activates "windows open level 2" status inidication (green2 led on)</td></tr>                      
+<tr><td>'http://esp-ip/wclosed1'</td><td>De-Activates "windows open level 1" status (green1 led off)</td></tr>
+<tr><td>'http://esp-ip/wclosed2'</td><td>De-Activates "windows open level 2" status (green2 led off)</td></tr>
+<tr><td>'http://esp-ip/wclosed'</td><td>De-Activates "windows open both levels" status (green1 and green2 leds off)</td></tr>
+<tr><td>'http://esp-ip/dopen'</td><td>“door open” status</td></tr>
+<tr><td>'http://esp-ip/dclosed'</td><td>“door closed” status</td></tr>
+<tr><td>'http://esp-ip/resetcnt'</td><td>Reset all counter</td></tr>
 </table>
 
 
